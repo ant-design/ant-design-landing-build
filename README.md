@@ -1,8 +1,15 @@
-# hackernews-async-ts
-
-[Hacker News](https://news.ycombinator.com/) showcase using typescript && egg
+# ant-design-landing-build
 
 ## QuickStart
+config `now` token in `config.default.ts`
+
+```js
+ config.now = {
+    url: 'https://api.zeit.co/v8/now',
+    token: 'your token',
+    templateDir: path.join(appInfo.baseDir, 'app', 'template'),
+  };
+```
 
 ### Development
 
@@ -10,15 +17,6 @@
 $ npm i
 $ npm run dev
 $ open http://localhost:7001/
-```
-
-Don't tsc compile at development mode, if you had run `tsc` then you need to `npm run clean` before `npm run dev`.
-
-### Deploy
-
-```bash
-$ npm run tsc
-$ npm start
 ```
 
 ### Npm Scripts

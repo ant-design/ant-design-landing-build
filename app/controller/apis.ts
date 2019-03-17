@@ -74,7 +74,7 @@ export default class APIController extends Controller {
     ctx.result(result);
   }
   /**
-   * POST /api/publish
+   * POST /api/deploy
    * 传参
    * {
    *  // 站点 name
@@ -111,7 +111,7 @@ export default class APIController extends Controller {
         type: 'array',
         itemType: 'object',
         required: true,
-      }
+      },
     };
     ctx.requireParams(schema, deployData);
 
@@ -147,7 +147,7 @@ export default class APIController extends Controller {
           {
             file: '.nowignore',
             data: nowIgnoreTmp,
-          }
+          },
         ],
         builds: [
           {
