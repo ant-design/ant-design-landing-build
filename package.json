@@ -24,10 +24,13 @@
   "dependencies": {
     "egg": "^2.6.1",
     "egg-scripts": "^2.6.0",
+    "egg-validate": "^2.0.2",
+    "nanoid": "^2.0.1",
     "nunjucks": "^3.2.0"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.40",
+    "@types/nanoid": "^1.2.1",
     "@types/node": "^7.0.12",
     "@types/nunjucks": "^3.1.1",
     "@types/supertest": "^2.0.0",

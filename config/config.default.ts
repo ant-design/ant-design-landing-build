@@ -1,4 +1,5 @@
 import { EggAppConfig, EggAppInfo, PowerPartial } from 'egg';
+import * as path from 'path';
 
 export default (appInfo: EggAppInfo) => {
   const config = {} as PowerPartial<EggAppConfig>;
@@ -8,7 +9,7 @@ export default (appInfo: EggAppInfo) => {
   config.keys = appInfo.name + '_1552207405478_5544';
 
   // add your egg config in here
-  config.middleware = [];
+  config.middleware = [ 'handleError' ];
 
   // add your special config in here
   const bizConfig = {
@@ -17,7 +18,9 @@ export default (appInfo: EggAppInfo) => {
   config.now = {
     url: 'https://api.zeit.co/v6/now',
     token: '',
+    templateDir: path.join(appInfo.baseDir, 'app', 'template'),
   };
+  config.validate = {};
 
   // the return config will combines to EggAppConfig
   return {
