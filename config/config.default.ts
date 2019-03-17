@@ -16,7 +16,7 @@ export default (appInfo: EggAppInfo) => {
     sourceUrl: `https://github.com/eggjs/examples/tree/master/${appInfo.name}`,
   };
   config.now = {
-    url: 'https://api.zeit.co/v6/now',
+    url: 'https://api.zeit.co/v8/now',
     token: '',
     templateDir: path.join(appInfo.baseDir, 'app', 'template'),
   };

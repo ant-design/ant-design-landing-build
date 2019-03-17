@@ -8,6 +8,8 @@ export default class APIController extends Controller {
   public requestOptions: object = {};
   public umiTmp: string = '';
   public url: string = '';
+  public nowIgnoreTmp: string = '';
+
   constructor(ctx) {
     super(ctx);
     const { now } = ctx.app.config;
@@ -15,6 +17,7 @@ export default class APIController extends Controller {
     nunjucks.configure(templateDir);
     this.pkgTmp = path.join(templateDir, 'package.json');
     this.umiTmp = path.join(templateDir, 'umirc.js');
+    this.nowIgnoreTmp = path.join(templateDir, 'nowignore');
     this.url = url;
     this.requestOptions = {
       dataType: 'json',
@@ -24,29 +27,93 @@ export default class APIController extends Controller {
       },
     };
   }
+  /**
+   * GET /api/deploy/:buildId/events
+   * 查看构建日志
+   */
+  public async queryDeployLogs() {
+    const { ctx } = this;
+    const { id } = ctx.params;
+
+    ctx.requireParams({
+      id: 'string',
+    }, ctx.params);
+    const result = await ctx.curl(`${this.url}/deployments/${id}/events`, {
+      method: 'GET',
+      ...this.requestOptions,
+    });
+    ctx.result(result);
+  }
+  /**
+   * GET /api/deploy/:buildId
+   * 根据构建 id 查询，当前构建是否成功
+   * 返回
+   * {
+   *   "data": {
+   *      // 当前部署状态
+   *      "readyState": INITIALIZING, ANALYZING, BUILDING, DEPLOYING, READY, or ERROR.
+   *      // 部署的站点 url
+   *      "url": ""
+   *      // 站点 alias 自定义域名
+   *      "aliasFinal": []
+   *      //
+   *    }
+   * }
+   */
   public async queryDeploy() {
     const { ctx } = this;
     const { id } = ctx.params;
-    // const id = 'dpl_GEvRmusGWUWxgtJS3SjjayKtXUJ9';
-    ctx.logger.info('---id-', id);
+
+    ctx.requireParams({
+      id: 'string',
+    }, ctx.params);
     const result = await ctx.curl(`${this.url}/deployments/${id}`, {
       method: 'GET',
       ...this.requestOptions,
     });
-    ctx.body = result;
+    ctx.result(result);
   }
   /**
    * POST /api/publish
+   * 传参
    * {
-   *
+   *  // 站点 name
+   *  name: string,
+   *  // 构建文件
+   *  files: [{
+   *    // 文件名
+   *    file: 'pages/xxx.jsx',
+   *    // 文件内容, string
+   *    data: '',
+   *  }]
    * }
    */
-  public async publish() {
+  public async deploy() {
     const { ctx } = this;
     const randomId = nanoid();
+
+    const {
+      name,
+      files,
+    } = ctx.request.body;
     const deployData = {
-      name: 'landing-page',
+      name,
+      files,
     };
+
+    const schema = {
+      name: {
+        type: 'string',
+        required: true,
+        max: 52,
+      },
+      files: {
+        type: 'array',
+        itemType: 'object',
+        required: true,
+      }
+    };
+    ctx.requireParams(schema, deployData);
 
     ctx.logger.debug('---randomId-', randomId);
 
@@ -54,103 +121,33 @@ export default class APIController extends Controller {
       name: deployData.name,
     });
     const umiContent = nunjucks.render(this.umiTmp);
+    const nowIgnoreTmp = nunjucks.render(this.nowIgnoreTmp);
 
     ctx.logger.debug('--pkgContent-', pkgContent);
     ctx.logger.debug('--umiContent-', umiContent);
 
-    const schema = {
-      name: 'string',
-    };
-    ctx.requireParams(schema, deployData);
     const settings: any = {
       method: 'POST',
       ...this.requestOptions,
       data: {
-        name: 'ant-design-landing-build',
+        // 一个站点一个 name
+        name: deployData.name,
+        public: false,
         version: 2,
         files: [
+          ...deployData.files,
           {
             file: 'package.json',
-            data: `
-            {
-              "name": "demo",
-              "private": true,
-              "scripts": {
-                "start": "now",
-                "dev": "umi dev",
-                "build": "umi build",
-                "now-build": "umi build"
-              },
-              "devDependencies": {
-                "husky": "^0.14.3",
-                "lint-staged": "^7.2.2",
-                "now": "^14.0.3"
-              },
-              "lint-staged": {
-                "*.{js,jsx}": [
-                  "eslint --fix",
-                  "git add"
-                ]
-              },
-              "engines": {
-                "node": ">=8.0.0"
-              },
-              "dependencies": {
-                "@now/static-build": "^0.4.18",
-                "@zeit/next-less": "^1.0.1",
-                "antd": "^3.15.0",
-                "babel-plugin-import": "^1.11.0",
-                "enquire-js": "^0.2.1",
-                "less": "^3.9.0",
-                "rc-banner-anim": "^2.2.2",
-                "rc-queue-anim": "^1.6.12",
-                "rc-scroll-anim": "^2.5.6",
-                "rc-tween-one": "^2.3.4",
-                "react": "^16.8.4",
-                "react-dom": "^16.8.4",
-                "umi": "^2.6.1",
-                "umi-plugin-react": "^1.6.0"
-              }
-            }
-
-            `,
-          },
-          {
-            file: 'pages/index.jsx',
-            data: `
-                import Landing from '../components/index';
-
-                export default () => {
-                  return <Landing />;
-                }
-            `,
-          },
-          {
-            file: 'components/index.jsx',
-            data: `
-              import React from 'react';
-              export default () => <div>Hello now, Hello World</div>;
-            `,
+            data: pkgContent,
           },
           {
             file: '.umirc.js',
-            data: `
-              export default {
-                disableCSSModules: true,
-                plugins: [
-                  [
-                    'umi-plugin-react', {
-                      antd: true,
-                      dva: false,
-                    }
-                  ],
-                ],
-                targets: {
-                  ie: 11,
-                },
-              }
-            `,
+            data: umiContent,
           },
+          {
+            file: '.nowignore',
+            data: nowIgnoreTmp,
+          }
         ],
         builds: [
           {
@@ -165,7 +162,7 @@ export default class APIController extends Controller {
     };
     ctx.logger.debug('settings', settings);
     const result = await ctx.curl(`${this.url}/deployments`, settings);
-    ctx.logger.info('----result-', result);
-    ctx.body = result;
+
+    ctx.result(result);
   }
 }

@@ -1,3 +1,5 @@
+import omit from 'omit.js';
+
 export default {
   /**
    * 输出错误的信息，并中断请求
@@ -17,6 +19,19 @@ export default {
     err.body = res;
     err.path = res.path;
     throw err;
+  },
+  result(res: any) {
+    const ctx: any = this;
+    if (res && res.status === 200) {
+      const { data, status } = res;
+      ctx.body = {
+        data: omit(data, [ 'lambdas', 'version', 'ownerId', 'regions', 'builds', 'build', 'plan', 'meta', 'createdIn', 'env', 'public' ]),
+        status,
+      };
+    } else {
+      const { data: { error }, status } = res;
+      ctx.error(error, { status });
+    }
   },
   requireParams(schema: object, data: object, msg = '') {
     const ctx: any = this;
