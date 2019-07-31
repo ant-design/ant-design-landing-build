@@ -30,7 +30,7 @@
     "omit.js": "^1.0.0"
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.40",
+    "@types/mocha": "^5.2.7",
     "@types/nanoid": "^1.2.1",
     "@types/node": "^12.7.3",
     "@types/nunjucks": "^3.1.1",
