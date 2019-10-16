@@ -9,9 +9,7 @@ logs/
 .vscode
 *.swp
 *.lock
-*.js
 !.autod.conf.js
-config.local.ts
 
 app/**/*.js
 test/**/*.js

@@ -1,0 +1,9 @@
+node_modules/
+logs/
+run/
+test/
+app/
+config/
+
+.DS_Store
+

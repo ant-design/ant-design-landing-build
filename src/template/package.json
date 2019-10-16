@@ -24,6 +24,7 @@
     "@now/static-build": "^0.4.18",
     "@zeit/next-less": "^1.0.1",
     "antd": "^3.15.0",
+    "rc-texty": "^0.2.0",
     "babel-plugin-import": "^1.11.0",
     "enquire-js": "^0.2.1",
     "less": "^3.9.0",

@@ -1,0 +1,4 @@
+{
+  "verbose": true,
+  "ignore": ["test/*", "app/*", "config/*", "dist/*", "logs/*", "run/*"]
+}
